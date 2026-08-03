@@ -1,1 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Financial Aid Offer Analyzer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #EEEBE3;
+    --card: #F8F6F1;
+    --ink: #1F2421;
+    --primary: #2E4636;
+    --warn: #A63D40;
+    --aid: #4C7A83;
+    --border: #DAD5C8;
+    --muted: #8A9187;
+    --muted2: #5C6B60;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    margin: 0;
+  }
+  header {
+    padding: 28px 32px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .brand-row { display: flex; align-items: center; gap: 12px; }
+  .brand-mark {
+    width: 36px; height: 36px; border-radius: 8px; background: var(--primary);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--paper);
+    font-family: 'Source Serif 4', serif; font-weight: 700; font-size: 16px;
+  }
+  .brand-name { font-family: 'Source Serif 4', serif; font-weight: 700; font-size: 21px; letter-spacing: -0.01em; }
+  .brand-sub { font-size: 12.5px; color: var(--muted2); margin-top: 1px; }
+  main { padding: 24px 32px; max-width: 1000px; margin: 0 auto; }
+  .layout { display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
+  @media (max-width: 700px) { .layout { grid-template-columns: 1fr; } }
+  .sidebar { display: flex; flex-direction: column; gap: 16px; }
+  .drop-zone {
+    display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center;
+    padding: 22px 16px; background: var(--card); border: 1.5px dashed #B8B2A2; border-radius: 10px; cursor: pointer;
+  }
+  .drop-zone:hover { border-color: var(--primary); }
+  .drop-zone-text { font-size: 13px; font-weight: 600; margin-top: 4px; }
+  .drop-zone-hint { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .group-prompt { background: #FBF3E3; border: 1px solid #E0C48A; border-radius: 8px; padding: 10px 12px; display: none; }
+  .group-prompt.visible { display: block; }
+  .group-prompt-title { font-size: 12px; font-weight: 600; margin-bottom: 6px; color: #5C4A1F; }
+  .group-file-item { font-size: 11px; color: #7A6A45; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .group-actions { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+  .btn-primary, .btn-secondary {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    border-radius: 6px; padding: 7px 10px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; border: none;
+  }
+  .btn-primary { background: var(--primary); color: var(--paper); }
+  .btn-secondary { background: transparent; border: 1px solid #C9B989; color: #5C4A1F; }
+  .letter-list { display: flex; flex-direction: column; gap: 6px; }
+  .empty-hint { font-size: 12.5px; color: var(--muted); padding: 8px 2px; }
+  .letter-row {
+    display: flex; align-items: center; gap: 10px; padding: 9px 10px;
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px; cursor: pointer;
+  }
+  .letter-row.selected { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+  .letter-row-info { flex: 1; min-width: 0; }
+  .letter-row-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .status-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; margin-top: 2px; }
+  .status-pending { color: var(--muted); }
+  .status-parsing { color: var(--aid); }
+  .status-done { color: var(--primary); }
+  .status-error { color: var(--warn); }
+  .page-count { font-size: 9.5px; color: var(--muted); background: var(--paper); border-radius: 8px; padding: 1px 6px; margin-left: 6px; }
+  .icon-btn { background: transparent; border: none; color: #A0776A; cursor: pointer; padding: 4px; flex-shrink: 0; font-size: 14px; }
+  .detail-panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 22px; min-height: 400px; }
+  .detail-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 360px; gap: 10px; color: var(--muted); font-size: 13.5px; }
+  .detail-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .school-name-input {
+    font-family: 'Source Serif 4', serif; font-weight: 700; font-size: 19px; border: none; background: transparent;
+    outline: none; color: var(--ink); flex: 1;
+  }
+  .file-name-note { font-size: 11.5px; color: var(--muted); margin-bottom: 10px; word-break: break-word; }
+  .add-page-btn {
+    display: flex; align-items: center; gap: 5px; background: transparent; border: 1px dashed #B8B2A2;
+    border-radius: 6px; padding: 6px 10px; font-size: 11.5px; color: var(--muted2); cursor: pointer; font-family: inherit; margin-bottom: 16px;
+  }
+  .error-box { background: rgba(166,61,64,0.08); color: var(--warn); font-size: 12.5px; padding: 10px 12px; border-radius: 7px; margin-bottom: 16px; }
+  .quality-box {
+    background: #FBF3E3; border: 1px solid #E0C48A; color: #5C4A1F; font-size: 12.5px;
+    padding: 10px 12px; border-radius: 7px; margin-bottom: 16px; line-height: 1.5;
+  }
+  .quality-box strong { display: block; margin-bottom: 2px; }
+  .quality-badge { color: #B8860B; font-size: 11px; }
+  .field-group { margin-bottom: 18px; }
+  .field-group-label {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+    margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 6px;
+  }
+  .figure-block { padding: 6px 0; border-bottom: 1px solid rgba(218,213,200,0.5); }
+  .figure-block:last-child { border-bottom: none; }
+  .figure-row { display: flex; justify-content: space-between; align-items: center; }
+  .figure-label { font-size: 13px; color: #3E4A41; padding-right: 10px; }
+  .figure-input-wrap { display: flex; align-items: center; background: var(--paper); border: 1px solid var(--border); border-radius: 5px; padding: 3px 8px; flex-shrink: 0; }
+  .dollar-sign { font-size: 12.5px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+  .figure-input {
+    border: none; background: transparent; outline: none; width: 100px; font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; text-align: right; color: var(--ink);
+  }
+  .source-details { margin-top: 3px; }
+  .source-details summary {
+    font-size: 10.5px; color: var(--aid); cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 3px;
+  }
+  .source-details summary::-webkit-details-marker { display: none; }
+  .source-details summary::before { content: '🔎'; font-size: 9px; }
+  .source-text {
+    font-size: 11px; color: var(--muted2); background: var(--paper); border-left: 2px solid var(--aid);
+    padding: 5px 8px; margin-top: 4px; border-radius: 0 4px 4px 0; font-style: italic; line-height: 1.4;
+  }
+  .source-text.none { color: var(--muted); font-style: normal; }
+  .scholarship-row {
+    background: var(--paper); border: 1px solid var(--border); border-radius: 7px; padding: 8px 10px; margin-bottom: 6px;
+  }
+  .scholarship-top { display: flex; align-items: center; gap: 8px; }
+  .scholarship-name-input {
+    flex: 1; border: none; background: transparent; outline: none; font-size: 13px; color: var(--ink); font-family: inherit;
+  }
+  .scholarship-amt-input {
+    border: none; background: var(--card); border: 1px solid var(--border); border-radius: 5px; outline: none;
+    width: 90px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; text-align: right; padding: 3px 6px;
+  }
+  .add-scholarship-btn {
+    display: flex; align-items: center; gap: 5px; background: transparent; border: 1px dashed #B8B2A2;
+    border-radius: 6px; padding: 6px 10px; font-size: 11.5px; color: var(--muted2); cursor: pointer; font-family: inherit; margin-top: 4px; width: 100%; justify-content: center;
+  }
+  .compare-btn {
+    display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%;
+    background: transparent; border: 1px solid var(--primary); color: var(--primary);
+    border-radius: 7px; padding: 9px 10px; font-size: 12.5px; font-weight: 600; cursor: pointer; font-family: inherit;
+  }
+  .compare-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .start-over-btn {
+    background: transparent; border: none; color: var(--muted); font-size: 11.5px; cursor: pointer;
+    font-family: inherit; text-decoration: underline; padding: 2px 0; align-self: center;
+  }
+  .retry-btn {
+    display: inline-flex; align-items: center; gap: 4px; background: transparent; border: 1px solid var(--warn);
+    color: var(--warn); border-radius: 5px; padding: 4px 9px; font-size: 11.5px; font-weight: 600; cursor: pointer;
+    font-family: inherit; margin-top: 6px;
+  }
+  .download-csv-btn {
+    display: inline-flex; align-items: center; gap: 5px; background: var(--card); border: 1px solid var(--border);
+    color: var(--muted2); border-radius: 6px; padding: 6px 11px; font-size: 12px; font-weight: 600; cursor: pointer;
+    font-family: inherit; margin-bottom: 12px;
+  }
+  .compare-pick-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; font-size: 13px; margin-bottom: 6px; }
+  .back-link { background: transparent; border: none; color: var(--muted2); font-size: 12px; cursor: pointer; font-family: inherit; padding: 0; margin-bottom: 14px; }
+  .compare-table-wrap { overflow-x: auto; }
+  table.compare-table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+  table.compare-table th, table.compare-table td { border: 1px solid var(--border); padding: 8px 12px; text-align: right; white-space: nowrap; }
+  table.compare-table th:first-child, table.compare-table td:first-child { text-align: left; white-space: normal; }
+  table.compare-table thead th { background: var(--primary); color: var(--paper); font-family: 'Source Serif 4', serif; font-size: 14px; font-weight: 600; }
+  table.compare-table .section-row td { background: var(--paper); font-weight: 700; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted2); text-align: left; }
+  table.compare-table .net-row td { background: rgba(76,122,131,0.10); font-weight: 700; }
+  table.compare-table .balance-row td { background: rgba(166,61,64,0.10); font-weight: 700; font-size: 13.5px; }
+  table.compare-table td.figure, table.compare-table th.figure { font-family: 'JetBrains Mono', monospace; }
+  table.compare-table .na { color: var(--muted); font-style: italic; }
+  footer { text-align: center; font-size: 11.5px; color: var(--muted); padding: 20px 32px 32px; border-top: 1px solid var(--border); margin-top: 20px; }
+  footer p { margin: 6px 0; max-width: 560px; margin-left: auto; margin-right: auto; line-height: 1.5; }
+  .spin { display: inline-block; animation: spin 1s linear infinite; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  input[type="file"] { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand-row">
+    <div class="brand-mark">$</div>
+    <div>
+      <div class="brand-name">Financial Aid Offer Analyzer</div>
+      <div class="brand-sub">upload an award letter → pull out the numbers that matter — proof of concept</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="layout">
+    <div class="sidebar">
+      <div class="drop-zone" id="dropZone">
+        <div style="font-size:20px;">⬆</div>
+        <div class="drop-zone-text">Drop letter file(s) here, or click to choose</div>
+        <div class="drop-zone-hint">PDF, photo, or screenshot — select multiple if one letter spans several photos</div>
+      </div>
+      <input type="file" id="fileInput" accept="application/pdf,image/*" multiple />
+
+      <div class="group-prompt" id="groupPrompt">
+        <div class="group-prompt-title" id="groupPromptTitle"></div>
+        <div id="groupFileList"></div>
+        <div class="group-actions">
+          <button class="btn-primary" id="combineBtn">⧉ One letter, multiple pages</button>
+          <button class="btn-secondary" id="separateBtn">Separate letters</button>
+        </div>
+      </div>
+
+      <div class="letter-list" id="letterList">
+        <div class="empty-hint" id="emptyHint">No letters uploaded yet.</div>
+      </div>
+
+      <button class="compare-btn" id="compareBtn">⚖ Compare offers</button>
+      <button class="start-over-btn" id="startOverBtn">Start over (clear all letters)</button>
+    </div>
+
+    <div class="detail-panel" id="detailPanel">
+      <div class="detail-empty">
+        <div style="font-size:26px;">📄</div>
+        <div>Select a letter to review its extracted data.</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<input type="file" id="addPageInput" accept="application/pdf,image/*" multiple />
+
+<footer>
+  <p>Internal proof of concept. Always double-check extracted figures against the original letter before relying on them.</p>
+  <p>Want to understand these terms better? <a href="https://studentaid.gov/complete-aid-process/how-calculated" target="_blank" rel="noopener noreferrer" style="color: var(--aid);">Learn more about how financial aid offers are calculated →</a></p>
+  <p>Have questions about your specific offer? Your school's financial aid office is the best resource — they can explain your award, walk through appeal options, and clarify anything on this list that this tool couldn't.</p>
+</footer>
+
+<script>
+const FIELD_SCHEMA = [
+  { key: "tuition", label: "Tuition", group: "Cost of Attendance" },
+  { key: "housing", label: "Housing", group: "Cost of Attendance" },
+  { key: "otherCosts", label: "Other Costs (books, transportation, personal, etc.)", group: "Cost of Attendance" },
+  { key: "pellGrant", label: "Pell Grant", group: "Gift Aid (doesn't need repayment)" },
+  { key: "stateAid", label: "State Aid", group: "Gift Aid (doesn't need repayment)" },
+  { key: "institutionalGrants", label: "Institutional Grants", group: "Gift Aid (doesn't need repayment)" },
+  { key: "otherGrants", label: "Other Grants (e.g. SEOG, unlisted aid)", group: "Gift Aid (doesn't need repayment)" },
+  { key: "directSubsidizedLoan", label: "Direct Subsidized Loan", group: "Self-Help Aid (must repay)" },
+  { key: "directUnsubsidizedLoan", label: "Direct Unsubsidized Loan", group: "Self-Help Aid (must repay)" },
+  { key: "directPlusLoan", label: "Direct PLUS Loan (Parent/Grad — not guaranteed)", group: "Self-Help Aid (must repay)" },
+  { key: "otherLoans", label: "Other Loans", group: "Self-Help Aid (must repay)" },
+  { key: "federalWorkStudy", label: "Federal Work-Study (earned, not guaranteed)", group: "Work (must be earned)" },
+];
+const GROUPS = ["Cost of Attendance", "Gift Aid (doesn't need repayment)", "Self-Help Aid (must repay)", "Work (must be earned)"];
+
+let letters = [];       // { id, fileNames, fileTypes, status, error, data }
+let filesById = {};     // id -> File[]
+let selectedId = null;
+let pendingGroupFiles = null;
+let view = 'detail';    // 'detail' | 'comparePick' | 'compareTable'
+let compareIds = [];
+
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const addPageInput = document.getElementById('addPageInput');
+let addPageTargetId = null;
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', (e) => e.preventDefault());
+dropZone.addEventListener('drop', (e) => { e.preventDefault(); handleNewFiles(e.dataTransfer.files); });
+fileInput.addEventListener('change', (e) => { if (e.target.files.length) handleNewFiles(e.target.files); e.target.value = ''; });
+addPageInput.addEventListener('change', (e) => {
+  if (e.target.files.length && addPageTargetId) addPagesToLetter(addPageTargetId, e.target.files);
+  e.target.value = '';
+});
+
+document.getElementById('combineBtn').addEventListener('click', () => resolvePendingGroup('combine'));
+document.getElementById('separateBtn').addEventListener('click', () => resolvePendingGroup('separate'));
+document.getElementById('compareBtn').addEventListener('click', () => {
+  view = compareIds.length >= 2 ? 'compareTable' : 'comparePick';
+  render();
+});
+document.getElementById('startOverBtn').addEventListener('click', () => {
+  if (letters.length === 0) return;
+  if (!confirm('Clear all uploaded letters and start over?')) return;
+  letters = [];
+  filesById = {};
+  selectedId = null;
+  compareIds = [];
+  view = 'detail';
+  render();
+});
+
+function uid() { return 'id-' + Math.random().toString(36).slice(2) + Date.now().toString(36); }
+
+function emptyField() { return { value: null, evidence: null }; }
+
+function emptyLetterData() {
+  return {
+    schoolName: "",
+    documentIssues: null,
+    tuition: emptyField(), housing: emptyField(), otherCosts: emptyField(),
+    pellGrant: emptyField(), stateAid: emptyField(), institutionalGrants: emptyField(), otherGrants: emptyField(),
+    directSubsidizedLoan: emptyField(), directUnsubsidizedLoan: emptyField(), directPlusLoan: emptyField(), otherLoans: emptyField(),
+    federalWorkStudy: emptyField(),
+    scholarships: [] // [{ id, name, amount, evidence }]
+  };
+}
+
+function handleNewFiles(fileList) {
+  const files = Array.from(fileList);
+  if (files.length === 0) return;
+  if (files.length === 1) {
+    createLetterFromFiles(files);
+  } else {
+    pendingGroupFiles = files;
+    showGroupPrompt(files);
+  }
+}
+
+function showGroupPrompt(files) {
+  document.getElementById('groupPromptTitle').textContent =
+    `You selected ${files.length} files — are these pages of the same letter?`;
+  const list = document.getElementById('groupFileList');
+  list.innerHTML = files.map(f => `<div class="group-file-item">${escapeHtml(f.name)}</div>`).join('');
+  document.getElementById('groupPrompt').classList.add('visible');
+}
+
+function resolvePendingGroup(mode) {
+  if (!pendingGroupFiles) return;
+  if (mode === 'combine') {
+    createLetterFromFiles(pendingGroupFiles);
+  } else {
+    pendingGroupFiles.forEach(f => createLetterFromFiles([f]));
+  }
+  pendingGroupFiles = null;
+  document.getElementById('groupPrompt').classList.remove('visible');
+}
+
+function createLetterFromFiles(files) {
+  const id = uid();
+  const letter = {
+    id, fileNames: files.map(f => f.name), fileTypes: files.map(f => f.type),
+    status: 'pending', error: null, data: emptyLetterData()
+  };
+  filesById[id] = files;
+  letters.push(letter);
+  if (!selectedId) selectedId = id;
+  render();
+  runExtraction(id, files);
+}
+
+function addPagesToLetter(id, fileList) {
+  const newFiles = Array.from(fileList);
+  if (newFiles.length === 0) return;
+  const combined = [...(filesById[id] || []), ...newFiles];
+  filesById[id] = combined;
+  const letter = letters.find(l => l.id === id);
+  letter.fileNames = combined.map(f => f.name);
+  letter.fileTypes = combined.map(f => f.type);
+  render();
+  runExtraction(id, combined);
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// Resizes/compresses image files in the browser before upload, so large phone-camera
+// photos (often 3-8MB each) don't blow past the server's request size limit. PDFs are
+// left untouched. Caps the longest edge at 1600px and re-encodes as JPEG at 85% quality.
+function resizeImageFile(file, maxDim = 1600, quality = 0.85) {
+  return new Promise((resolve, reject) => {
+    if (file.type === 'application/pdf') { resolve(file); return; }
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width <= maxDim && height <= maxDim) { resolve(file); return; }
+      const scale = maxDim / Math.max(width, height);
+      width = Math.round(width * scale);
+      height = Math.round(height * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      canvas.toBlob((blob) => {
+        if (!blob) { resolve(file); return; }
+        resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+      }, 'image/jpeg', quality);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+
+function normalizeExtracted(raw) {
+  const d = emptyLetterData();
+  d.schoolName = raw.schoolName || "";
+  d.documentIssues = raw.documentIssues || null;
+  FIELD_SCHEMA.forEach(f => {
+    const r = raw[f.key];
+    if (r && typeof r === 'object') {
+      d[f.key] = { value: typeof r.value === 'number' ? r.value : null, evidence: r.evidence || null };
+    }
+  });
+  if (Array.isArray(raw.scholarships)) {
+    d.scholarships = raw.scholarships
+      .filter(s => s && typeof s.amount === 'number')
+      .map(s => ({ id: uid(), name: s.name || 'Scholarship', amount: s.amount, evidence: s.evidence || null }));
+  }
+  return d;
+}
+
+async function runExtraction(id, files) {
+  const letter = letters.find(l => l.id === id);
+  letter.status = 'parsing';
+  render();
+  try {
+    const filesPayload = [];
+    for (const f of files) {
+      const resized = await resizeImageFile(f);
+      const base64 = await fileToBase64(resized);
+      filesPayload.push({ mimeType: resized.type || 'application/octet-stream', base64 });
+    }
+    const res = await fetch('/api/extract', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ files: filesPayload })
+    });
+
+    const rawText = await res.text();
+    let extracted;
+    try {
+      extracted = JSON.parse(rawText);
+    } catch {
+      if (res.status === 413) {
+        throw new Error('These files are too large to upload, even after compression. Try a lower-resolution photo or a smaller PDF.');
+      }
+      throw new Error(`Server returned an unexpected response (status ${res.status}). Try again, or use a smaller file.`);
+    }
+
+    if (!res.ok) throw new Error(extracted.error || 'Extraction failed');
+
+    const l = letters.find(x => x.id === id);
+    l.status = 'done';
+    l.data = normalizeExtracted(extracted);
+  } catch (err) {
+    const l = letters.find(x => x.id === id);
+    l.status = 'error';
+    l.error = err.message;
+  }
+  render();
+}
+
+function removeLetter(id) {
+  letters = letters.filter(l => l.id !== id);
+  delete filesById[id];
+  if (selectedId === id) selectedId = null;
+  render();
+}
+
+function selectLetter(id) { selectedId = id; view = 'detail'; render(); }
+
+function scholarshipTotal(letter) {
+  return letter.data.scholarships.reduce((sum, s) => sum + (typeof s.amount === 'number' ? s.amount : 0), 0);
+}
+
+function computeDerived(letter) {
+  const d = letter.data;
+  const coaFields = [d.tuition.value, d.housing.value, d.otherCosts.value];
+  const coaParts = coaFields.filter(v => typeof v === 'number');
+  const coa = coaParts.length ? coaParts.reduce((a, b) => a + b, 0) : null;
+  const coaComplete = coaFields.every(v => typeof v === 'number');
+
+  const scholTotal = scholarshipTotal(letter);
+  const giftFields = [d.pellGrant.value, d.stateAid.value, d.institutionalGrants.value, d.otherGrants.value];
+  const giftParts = giftFields.filter(v => typeof v === 'number');
+  const giftAidTotal = giftParts.reduce((a, b) => a + b, 0) + scholTotal;
+
+  const netPrice = coa !== null ? coa - giftAidTotal : null;
+
+  const loanFields = [d.directSubsidizedLoan.value, d.directUnsubsidizedLoan.value, d.directPlusLoan.value, d.otherLoans.value];
+  const loanParts = loanFields.filter(v => typeof v === 'number');
+  const loans = loanParts.length ? loanParts.reduce((a, b) => a + b, 0) : 0;
+
+  const workStudy = typeof d.federalWorkStudy.value === 'number' ? d.federalWorkStudy.value : 0;
+
+  const balance = netPrice !== null ? netPrice - loans - workStudy : null;
+
+  return { coa, coaComplete, giftAid: giftAidTotal, netPrice, loans, workStudy, balance };
+}
+
+function fmtMoney(v) {
+  if (v === null || v === undefined) return '<span class="na">—</span>';
+  return '$' + Math.round(v).toLocaleString('en-US');
+}
+
+function toggleCompareId(id) {
+  const idx = compareIds.indexOf(id);
+  if (idx >= 0) compareIds.splice(idx, 1);
+  else if (compareIds.length < 4) compareIds.push(id);
+  render();
+}
+
+function updateFieldValue(id, key, value) {
+  const l = letters.find(x => x.id === id);
+  l.data[key].value = value;
+  render();
+}
+
+function updateSchoolName(id, value) {
+  const l = letters.find(x => x.id === id);
+  l.data.schoolName = value;
+  renderLetterList();
+}
+
+function addScholarship(id) {
+  const l = letters.find(x => x.id === id);
+  l.data.scholarships.push({ id: uid(), name: '', amount: null, evidence: null });
+  render();
+}
+
+function updateScholarship(id, schId, patch) {
+  const l = letters.find(x => x.id === id);
+  const s = l.data.scholarships.find(x => x.id === schId);
+  Object.assign(s, patch);
+  render();
+}
+
+function removeScholarship(id, schId) {
+  const l = letters.find(x => x.id === id);
+  l.data.scholarships = l.data.scholarships.filter(x => x.id !== schId);
+  render();
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str == null ? '' : str;
+  return div.innerHTML;
+}
+
+function sourceDetailsHtml(evidence) {
+  if (!evidence) {
+    return `<details class="source-details"><summary>Source</summary><div class="source-text none">No source line found — this may be manually entered or the model didn't cite a specific spot.</div></details>`;
+  }
+  return `<details class="source-details"><summary>Source</summary><div class="source-text">"${escapeHtml(evidence)}"</div></details>`;
+}
+
+function statusTagHtml(status) {
+  if (status === 'parsing') return `<span class="status-tag status-parsing"><span class="spin">⟳</span> Parsing…</span>`;
+  if (status === 'done') return `<span class="status-tag status-done">✓ Extracted</span>`;
+  if (status === 'error') return `<span class="status-tag status-error">⚠ Failed</span>`;
+  return `<span class="status-tag status-pending">Pending</span>`;
+}
+
+function renderLetterList() {
+  const container = document.getElementById('letterList');
+  if (letters.length === 0) {
+    container.innerHTML = `<div class="empty-hint" id="emptyHint">No letters uploaded yet.</div>`;
+    return;
+  }
+  container.innerHTML = letters.map(l => {
+    const isMulti = l.fileNames.length > 1;
+    const icon = isMulti ? '⧉' : (l.fileTypes[0] === 'application/pdf' ? '📄' : '🖼');
+    return `
+      <div class="letter-row ${l.id === selectedId ? 'selected' : ''}" data-id="${l.id}">
+        <div>${icon}</div>
+        <div class="letter-row-info">
+          <div class="letter-row-name">${escapeHtml(l.data.schoolName || l.fileNames[0])}</div>
+          <div>${statusTagHtml(l.status)}${isMulti ? `<span class="page-count">${l.fileNames.length} pages</span>` : ''}${l.data.documentIssues ? `<span class="quality-badge"> ⚠ hard to read</span>` : ''}</div>
+        </div>
+        <button class="icon-btn" data-remove="${l.id}">🗑</button>
+      </div>`;
+  }).join('');
+
+  container.querySelectorAll('.letter-row').forEach(row => {
+    row.addEventListener('click', (e) => {
+      if (e.target.closest('[data-remove]')) return;
+      selectLetter(row.dataset.id);
+    });
+  });
+  container.querySelectorAll('[data-remove]').forEach(btn => {
+    btn.addEventListener('click', (e) => { e.stopPropagation(); removeLetter(btn.dataset.remove); });
+  });
+}
+
+function renderDetailPanel() {
+  const panel = document.getElementById('detailPanel');
+
+  if (view === 'comparePick') { renderComparePick(panel); return; }
+  if (view === 'compareTable') { renderCompareTable(panel); return; }
+
+  const letter = letters.find(l => l.id === selectedId);
+  if (!letter) {
+    panel.innerHTML = `<div class="detail-empty"><div style="font-size:26px;">📄</div><div>Select a letter to review its extracted data.</div></div>`;
+    return;
+  }
+  const isMulti = letter.fileNames.length > 1;
+  let html = `
+    <div class="detail-header">
+      <input class="school-name-input" id="schoolNameInput" placeholder="School name" value="${escapeHtml(letter.data.schoolName)}" />
+      ${statusTagHtml(letter.status)}
+    </div>
+    <div class="file-name-note">${isMulti ? `from ${letter.fileNames.length} files: ${escapeHtml(letter.fileNames.join(', '))}` : `from ${escapeHtml(letter.fileNames[0])}`}</div>
+    <button class="add-page-btn" id="addPageBtn">+ Add another page/photo to this letter</button>
+  `;
+  if (letter.status === 'error') {
+    html += `<div class="error-box">Extraction failed: ${escapeHtml(letter.error || '')}. You can enter the figures manually below, or try again.<br/><button class="retry-btn" id="retryBtn">↻ Retry extraction</button></div>`;
+  }
+  if (letter.data.documentIssues) {
+    html += `<div class="quality-box"><strong>⚠ This file may be hard to read</strong>${escapeHtml(letter.data.documentIssues)} Consider retaking the photo (good lighting, no glare, whole page in frame) or uploading a PDF if you have one — then re-check the figures below.</div>`;
+  }
+
+  GROUPS.forEach(group => {
+    html += `<div class="field-group"><div class="field-group-label">${group}</div>`;
+
+    FIELD_SCHEMA.filter(f => f.group === group).forEach(f => {
+      const field = letter.data[f.key];
+      html += `
+        <div class="figure-block">
+          <div class="figure-row">
+            <label class="figure-label">${f.label}</label>
+            <div class="figure-input-wrap">
+              <span class="dollar-sign">$</span>
+              <input class="figure-input" type="number" min="0" data-field="${f.key}" value="${field.value === null ? '' : field.value}" placeholder="—" />
+            </div>
+          </div>
+          ${field.value !== null ? sourceDetailsHtml(field.evidence) : ''}
+        </div>`;
+    });
+
+    if (group === "Gift Aid (doesn't need repayment)") {
+      html += `<div class="figure-block"><div class="field-group-label" style="border:none; margin-bottom:6px; margin-top:6px;">Scholarships</div>`;
+      letter.data.scholarships.forEach(s => {
+        html += `
+          <div class="scholarship-row">
+            <div class="scholarship-top">
+              <input class="scholarship-name-input" data-sch-name="${s.id}" placeholder="Scholarship name" value="${escapeHtml(s.name)}" />
+              <div class="figure-input-wrap">
+                <span class="dollar-sign">$</span>
+                <input class="scholarship-amt-input" type="number" min="0" data-sch-amount="${s.id}" value="${s.amount === null ? '' : s.amount}" placeholder="0" />
+              </div>
+              <button class="icon-btn" data-sch-remove="${s.id}">🗑</button>
+            </div>
+            ${sourceDetailsHtml(s.evidence)}
+          </div>`;
+      });
+      html += `<button class="add-scholarship-btn" id="addScholarshipBtn">+ Add scholarship</button></div>`;
+    }
+
+    html += `</div>`;
+  });
+
+  panel.innerHTML = html;
+
+  document.getElementById('schoolNameInput').addEventListener('input', (e) => updateSchoolName(letter.id, e.target.value));
+  document.getElementById('addPageBtn').addEventListener('click', () => {
+    addPageTargetId = letter.id;
+    addPageInput.click();
+  });
+  const retryBtn = document.getElementById('retryBtn');
+  if (retryBtn) retryBtn.addEventListener('click', () => runExtraction(letter.id, filesById[letter.id] || []));
+  panel.querySelectorAll('[data-field]').forEach(input => {
+    input.addEventListener('change', (e) => {
+      const v = e.target.value === '' ? null : Number(e.target.value);
+      updateFieldValue(letter.id, e.target.dataset.field, v);
+    });
+  });
+  const addSchBtn = document.getElementById('addScholarshipBtn');
+  if (addSchBtn) addSchBtn.addEventListener('click', () => addScholarship(letter.id));
+  panel.querySelectorAll('[data-sch-name]').forEach(input => {
+    input.addEventListener('change', (e) => updateScholarship(letter.id, e.target.dataset.schName, { name: e.target.value }));
+  });
+  panel.querySelectorAll('[data-sch-amount]').forEach(input => {
+    input.addEventListener('change', (e) => {
+      const v = e.target.value === '' ? null : Number(e.target.value);
+      updateScholarship(letter.id, e.target.dataset.schAmount, { amount: v });
+    });
+  });
+  panel.querySelectorAll('[data-sch-remove]').forEach(btn => {
+    btn.addEventListener('click', (e) => removeScholarship(letter.id, e.target.dataset.schRemove));
+  });
+}
+
+function renderComparePick(panel) {
+  if (letters.length < 2) {
+    panel.innerHTML = `<div class="detail-empty"><div style="font-size:26px;">⚖</div><div>Add at least two letters before comparing.</div></div>`;
+    return;
+  }
+  let html = `<button class="back-link" id="backFromPick">← Back</button>
+    <div class="field-group-label" style="border:none; margin-bottom:10px;">Choose up to 4 offers to compare</div>`;
+  letters.forEach(l => {
+    html += `
+      <label class="compare-pick-row">
+        <input type="checkbox" data-pick="${l.id}" ${compareIds.includes(l.id) ? 'checked' : ''} />
+        <span>${escapeHtml(l.data.schoolName || l.fileNames[0])}</span>
+      </label>`;
+  });
+  html += `<button class="btn-primary" id="viewCompareBtn" style="margin-top:10px;" ${compareIds.length < 2 ? 'disabled' : ''}>View comparison →</button>`;
+  panel.innerHTML = html;
+
+  document.getElementById('backFromPick').addEventListener('click', () => { view = 'detail'; render(); });
+  panel.querySelectorAll('[data-pick]').forEach(cb => {
+    cb.addEventListener('change', () => toggleCompareId(cb.dataset.pick));
+  });
+  const goBtn = document.getElementById('viewCompareBtn');
+  if (goBtn) goBtn.addEventListener('click', () => { view = 'compareTable'; render(); });
+}
+
+function letterToCsvRows(letter) {
+  const d = letter.data;
+  const rows = [];
+  const name = f => (f && typeof f.value === 'number') ? f.value : '';
+  rows.push(['Tuition', name(d.tuition)]);
+  rows.push(['Housing', name(d.housing)]);
+  rows.push(['Other Costs', name(d.otherCosts)]);
+  rows.push(['Pell Grant', name(d.pellGrant)]);
+  rows.push(['State Aid', name(d.stateAid)]);
+  rows.push(['Institutional Grants', name(d.institutionalGrants)]);
+  d.scholarships.forEach(s => rows.push([`Scholarship: ${s.name || 'Unnamed'}`, typeof s.amount === 'number' ? s.amount : '']));
+  rows.push(['Other Grants', name(d.otherGrants)]);
+  rows.push(['Direct Subsidized Loan', name(d.directSubsidizedLoan)]);
+  rows.push(['Direct Unsubsidized Loan', name(d.directUnsubsidizedLoan)]);
+  rows.push(['Direct PLUS Loan', name(d.directPlusLoan)]);
+  rows.push(['Other Loans', name(d.otherLoans)]);
+  rows.push(['Federal Work-Study', name(d.federalWorkStudy)]);
+  return rows;
+}
+
+function csvEscape(v) {
+  const s = String(v);
+  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function downloadComparisonCsv(compared, derivedByLetterId) {
+  const labelRows = letterToCsvRows(compared[0]).map(r => r[0]);
+  const header = ['Line item', ...compared.map(l => l.data.schoolName || l.fileNames[0])];
+  const lines = [header];
+  labelRows.forEach((label, i) => {
+    const row = [label];
+    compared.forEach(l => { row.push(letterToCsvRows(l)[i][1]); });
+    lines.push(row);
+  });
+  lines.push(['Total Cost of Attendance (COA)', ...compared.map(l => derivedByLetterId[l.id].coa ?? '')]);
+  lines.push(['Net Price', ...compared.map(l => derivedByLetterId[l.id].netPrice ?? '')]);
+  lines.push(['Balance Remaining', ...compared.map(l => derivedByLetterId[l.id].balance ?? '')]);
+
+  const csv = lines.map(row => row.map(csvEscape).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'financial-aid-comparison.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function renderCompareTable(panel) {
+  const compared = letters.filter(l => compareIds.includes(l.id));
+  if (compared.length < 2) { view = 'comparePick'; renderComparePick(panel); return; }
+
+  const derived = compared.map(l => ({ letter: l, d: computeDerived(l) }));
+  const derivedByLetterId = {};
+  derived.forEach(x => { derivedByLetterId[x.letter.id] = x.d; });
+
+  let html = `
+    <button class="back-link" id="backFromTable">← Choose different offers</button>
+    <button class="download-csv-btn" id="downloadCsvBtn">⬇ Download comparison as CSV</button>
+    <div class="compare-table-wrap"><table class="compare-table">
+    <thead><tr><th></th>${derived.map(x => `<th>${escapeHtml(x.letter.data.schoolName || x.letter.fileNames[0])}</th>`).join('')}</tr></thead>
+    <tbody>
+      <tr><td>Total Cost of Attendance (COA)</td>${derived.map(x => `<td class="figure">${x.d.coa === null ? '<span class="na">—</span>' : fmtMoney(x.d.coa) + (x.d.coaComplete ? '' : '<span class="na">*</span>')}</td>`).join('')}</tr>
+
+      <tr class="section-row"><td colspan="${derived.length + 1}">Gift Aid (money you don't have to pay back)</td></tr>
+      <tr><td>Pell Grant</td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.pellGrant.value)}</td>`).join('')}</tr>
+      <tr><td>State Aid</td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.stateAid.value)}</td>`).join('')}</tr>
+      <tr><td>Institutional Grants</td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.institutionalGrants.value)}</td>`).join('')}</tr>
+      <tr><td>Scholarships (${derived.map(x => x.letter.data.scholarships.length).join('/')} listed)</td>${derived.map(x => `<td class="figure">${fmtMoney(scholarshipTotal(x.letter))}</td>`).join('')}</tr>
+      <tr><td>Other Grants</td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.otherGrants.value)}</td>`).join('')}</tr>
+
+      <tr class="net-row"><td>Net Price (COA − Gift Aid)</td>${derived.map(x => `<td class="figure">${fmtMoney(x.d.netPrice)}</td>`).join('')}</tr>
+
+      <tr class="section-row"><td colspan="${derived.length + 1}">Self-Help Aid (money you do have to pay back — loans)</td></tr>
+      <tr><td>Direct Subsidized Loan</td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.directSubsidizedLoan.value)}</td>`).join('')}</tr>
+      <tr><td>Direct Unsubsidized Loan</td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.directUnsubsidizedLoan.value)}</td>`).join('')}</tr>
+      <tr><td>Direct PLUS Loan <span style="font-weight:400; color:var(--muted); font-size:10.5px;">(not guaranteed)</span></td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.directPlusLoan.value)}</td>`).join('')}</tr>
+      <tr><td>Other Loans</td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.otherLoans.value)}</td>`).join('')}</tr>
+
+      <tr class="section-row"><td colspan="${derived.length + 1}">Work (money you can earn)</td></tr>
+      <tr><td>Federal Work-Study <span style="font-weight:400; color:var(--muted); font-size:10.5px;">(earned, not guaranteed)</span></td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.federalWorkStudy.value)}</td>`).join('')}</tr>
+
+      <tr class="balance-row"><td>Balance Remaining (Net Price − Loans − Work-Study)</td>${derived.map(x => `<td class="figure">${fmtMoney(x.d.balance)}</td>`).join('')}</tr>
+    </tbody>
+    </table></div>
+    <p style="font-size:11px; color:var(--muted); margin-top:12px; line-height:1.5;">
+      * COA shown is only a partial total — one or more of Tuition/Housing/Other Costs wasn't found on that letter, so this figure may understate the real cost. Work-study and PLUS loans are not guaranteed — work-study must be earned through employment, and PLUS loans require a separate credit-based application. Open a letter's detail view to see the source line behind any figure.
+    </p>
+  `;
+  panel.innerHTML = html;
+  document.getElementById('backFromTable').addEventListener('click', () => { view = 'comparePick'; render(); });
+  document.getElementById('downloadCsvBtn').addEventListener('click', () => downloadComparisonCsv(compared, derivedByLetterId));
+}
+
+function render() {
+  renderLetterList();
+  renderDetailPanel();
+  document.getElementById('compareBtn').disabled = letters.length < 2;
+}
+
+render();
+</script>
+</body>
+</html>
 
