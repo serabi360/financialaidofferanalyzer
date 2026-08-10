@@ -7,251 +7,274 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --paper: #EEEBE3;
-    --card: #F8F6F1;
-    --ink: #1F2421;
-    --primary: #2E4636;
-    --warn: #A63D40;
-    --aid: #4C7A83;
-    --border: #DAD5C8;
-    --muted: #8A9187;
-    --muted2: #5C6B60;
-  }
-  * { box-sizing: border-box; }
-  body {
-    font-family: 'Inter', -apple-system, sans-serif;
-    background: var(--paper);
-    color: var(--ink);
-    margin: 0;
-  }
-  header {
-    padding: 28px 32px 16px;
-    border-bottom: 1px solid var(--border);
-  }
-  .brand-row { display: flex; align-items: center; gap: 12px; }
-  .brand-mark {
-    width: 36px; height: 36px; border-radius: 8px; background: var(--primary);
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--paper);
-    font-family: 'Source Serif 4', serif; font-weight: 700; font-size: 16px;
-  }
-  .brand-name { font-family: 'Source Serif 4', serif; font-weight: 700; font-size: 21px; letter-spacing: -0.01em; }
-  .brand-sub { font-size: 12.5px; color: var(--muted2); margin-top: 1px; }
-  main { padding: 24px 32px; max-width: 1000px; margin: 0 auto; }
-  .layout { display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
-  @media (max-width: 700px) { .layout { grid-template-columns: 1fr; } }
-  .sidebar { display: flex; flex-direction: column; gap: 16px; }
-  .drop-zone {
-    display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center;
-    padding: 22px 16px; background: var(--card); border: 1.5px dashed #B8B2A2; border-radius: 10px; cursor: pointer;
-  }
-  .drop-zone:hover { border-color: var(--primary); }
-  .drop-zone-text { font-size: 13px; font-weight: 600; margin-top: 4px; }
-  .drop-zone-hint { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .group-prompt { background: #FBF3E3; border: 1px solid #E0C48A; border-radius: 8px; padding: 10px 12px; display: none; }
-  .group-prompt.visible { display: block; }
-  .group-prompt-title { font-size: 12px; font-weight: 600; margin-bottom: 6px; color: #5C4A1F; }
-  .group-file-item { font-size: 11px; color: #7A6A45; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .group-actions { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
-  .btn-primary, .btn-secondary {
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-    border-radius: 6px; padding: 7px 10px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; border: none;
-  }
-  .btn-primary { background: var(--primary); color: var(--paper); }
-  .btn-secondary { background: transparent; border: 1px solid #C9B989; color: #5C4A1F; }
-  .letter-list { display: flex; flex-direction: column; gap: 6px; }
-  .empty-hint { font-size: 12.5px; color: var(--muted); padding: 8px 2px; }
-  .letter-row {
-    display: flex; align-items: center; gap: 10px; padding: 9px 10px;
-    background: var(--card); border: 1px solid var(--border); border-radius: 8px; cursor: pointer;
-  }
-  .letter-row.selected { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
-  .letter-row-info { flex: 1; min-width: 0; }
-  .letter-row-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .status-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; margin-top: 2px; }
-  .status-pending { color: var(--muted); }
-  .status-parsing { color: var(--aid); }
-  .status-done { color: var(--primary); }
-  .status-error { color: var(--warn); }
-  .page-count { font-size: 9.5px; color: var(--muted); background: var(--paper); border-radius: 8px; padding: 1px 6px; margin-left: 6px; }
-  .icon-btn { background: transparent; border: none; color: #A0776A; cursor: pointer; padding: 4px; flex-shrink: 0; font-size: 14px; }
-  .detail-panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 22px; min-height: 400px; }
-  .detail-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 360px; gap: 10px; color: var(--muted); font-size: 13.5px; }
-  .detail-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-  .school-name-input {
-    font-family: 'Source Serif 4', serif; font-weight: 700; font-size: 19px; border: none; background: transparent;
-    outline: none; color: var(--ink); flex: 1;
-  }
-  .file-name-note { font-size: 11.5px; color: var(--muted); margin-bottom: 10px; word-break: break-word; }
-  .add-page-btn {
-    display: flex; align-items: center; gap: 5px; background: transparent; border: 1px dashed #B8B2A2;
-    border-radius: 6px; padding: 6px 10px; font-size: 11.5px; color: var(--muted2); cursor: pointer; font-family: inherit; margin-bottom: 16px;
-  }
-  .error-box { background: rgba(166,61,64,0.08); color: var(--warn); font-size: 12.5px; padding: 10px 12px; border-radius: 7px; margin-bottom: 16px; }
-  .quality-box {
-    background: #FBF3E3; border: 1px solid #E0C48A; color: #5C4A1F; font-size: 12.5px;
-    padding: 10px 12px; border-radius: 7px; margin-bottom: 16px; line-height: 1.5;
-  }
-  .quality-box strong { display: block; margin-bottom: 2px; }
-  .quality-badge { color: #B8860B; font-size: 11px; }
-  .field-group { margin-bottom: 18px; }
-  .field-group-label {
-    font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
-    margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 6px;
-  }
-  .figure-block { padding: 6px 0; border-bottom: 1px solid rgba(218,213,200,0.5); }
-  .figure-block:last-child { border-bottom: none; }
-  .figure-row { display: flex; justify-content: space-between; align-items: center; }
-  .figure-label { font-size: 13px; color: #3E4A41; padding-right: 10px; }
-  .figure-input-wrap { display: flex; align-items: center; background: var(--paper); border: 1px solid var(--border); border-radius: 5px; padding: 3px 8px; flex-shrink: 0; }
-  .dollar-sign { font-size: 12.5px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
-  .figure-input {
-    border: none; background: transparent; outline: none; width: 100px; font-family: 'JetBrains Mono', monospace;
-    font-size: 13px; text-align: right; color: var(--ink);
-  }
-  .source-details { margin-top: 3px; }
-  .source-details summary {
-    font-size: 10.5px; color: var(--aid); cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 3px;
-  }
-  .source-details summary::-webkit-details-marker { display: none; }
-  .source-details summary::before { content: '🔎'; font-size: 9px; }
-  .source-text {
-    font-size: 11px; color: var(--muted2); background: var(--paper); border-left: 2px solid var(--aid);
-    padding: 5px 8px; margin-top: 4px; border-radius: 0 4px 4px 0; font-style: italic; line-height: 1.4;
-  }
-  .source-text.none { color: var(--muted); font-style: normal; }
-  .scholarship-row {
-    background: var(--paper); border: 1px solid var(--border); border-radius: 7px; padding: 8px 10px; margin-bottom: 6px;
-  }
-  .scholarship-top { display: flex; align-items: center; gap: 8px; }
-  .scholarship-name-input {
-    flex: 1; border: none; background: transparent; outline: none; font-size: 13px; color: var(--ink); font-family: inherit;
-  }
-  .scholarship-amt-input {
-    border: none; background: var(--card); border: 1px solid var(--border); border-radius: 5px; outline: none;
-    width: 90px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; text-align: right; padding: 3px 6px;
-  }
-  .add-scholarship-btn {
-    display: flex; align-items: center; gap: 5px; background: transparent; border: 1px dashed #B8B2A2;
-    border-radius: 6px; padding: 6px 10px; font-size: 11.5px; color: var(--muted2); cursor: pointer; font-family: inherit; margin-top: 4px; width: 100%; justify-content: center;
-  }
-  .compare-btn {
-    display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%;
-    background: transparent; border: 1px solid var(--primary); color: var(--primary);
-    border-radius: 7px; padding: 9px 10px; font-size: 12.5px; font-weight: 600; cursor: pointer; font-family: inherit;
-  }
-  .compare-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .start-over-btn {
-    background: transparent; border: none; color: var(--muted); font-size: 11.5px; cursor: pointer;
-    font-family: inherit; text-decoration: underline; padding: 2px 0; align-self: center;
-  }
-  .retry-btn {
-    display: inline-flex; align-items: center; gap: 4px; background: transparent; border: 1px solid var(--warn);
-    color: var(--warn); border-radius: 5px; padding: 4px 9px; font-size: 11.5px; font-weight: 600; cursor: pointer;
-    font-family: inherit; margin-top: 6px;
-  }
-  .download-csv-btn {
-    display: inline-flex; align-items: center; gap: 5px; background: var(--card); border: 1px solid var(--border);
-    color: var(--muted2); border-radius: 6px; padding: 6px 11px; font-size: 12px; font-weight: 600; cursor: pointer;
-    font-family: inherit; margin-bottom: 12px;
-  }
-  .compare-pick-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; font-size: 13px; margin-bottom: 6px; }
-  .back-link { background: transparent; border: none; color: var(--muted2); font-size: 12px; cursor: pointer; font-family: inherit; padding: 0; margin-bottom: 14px; }
-  .compare-table-wrap { overflow-x: auto; }
-  table.compare-table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
-  table.compare-table th, table.compare-table td { border: 1px solid var(--border); padding: 8px 12px; text-align: right; white-space: nowrap; }
-  table.compare-table th:first-child, table.compare-table td:first-child { text-align: left; white-space: normal; }
-  table.compare-table thead th { background: var(--primary); color: var(--paper); font-family: 'Source Serif 4', serif; font-size: 14px; font-weight: 600; }
-  table.compare-table .section-row td { background: var(--paper); font-weight: 700; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted2); text-align: left; }
-  table.compare-table .net-row td { background: rgba(76,122,131,0.10); font-weight: 700; }
-  table.compare-table .balance-row td { background: rgba(166,61,64,0.10); font-weight: 700; font-size: 13.5px; }
-  table.compare-table td.figure, table.compare-table th.figure { font-family: 'JetBrains Mono', monospace; }
-  table.compare-table .na { color: var(--muted); font-style: italic; }
-  footer { text-align: center; font-size: 11.5px; color: var(--muted); padding: 20px 32px 32px; border-top: 1px solid var(--border); margin-top: 20px; }
-  footer p { margin: 6px 0; max-width: 560px; margin-left: auto; margin-right: auto; line-height: 1.5; }
-  .spin { display: inline-block; animation: spin 1s linear infinite; }
-  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-  input[type="file"] { display: none; }
+:root {
+  --paper: #EEEBE3;
+  --card: #F8F6F1;
+  --ink: #1F2421;
+  --primary: #2E4636;
+  --warn: #A63D40;
+  --aid: #4C7A83;
+  --border: #DAD5C8;
+  --muted: #8A9187;
+  --muted2: #5C6B60;
+  --reg: #7A5C8A;
+}
+* { box-sizing: border-box; }
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  margin: 0;
+}
+header {
+  padding: 28px 32px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.brand-row { display: flex; align-items: center; gap: 12px; }
+.brand-mark {
+  width: 36px; height: 36px; border-radius: 8px; background: var(--primary);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--paper);
+  font-family: 'Source Serif 4', serif; font-weight: 700; font-size: 16px;
+}
+.brand-name { font-family: 'Source Serif 4', serif; font-weight: 700; font-size: 21px; letter-spacing: -0.01em; }
+.brand-sub { font-size: 12.5px; color: var(--muted2); margin-top: 1px; }
+main { padding: 24px 32px; max-width: 1000px; margin: 0 auto; }
+.layout { display: grid; grid-template-columns: 300px 1fr; gap: 20px; }
+@media (max-width: 700px) { .layout { grid-template-columns: 1fr; } }
+.sidebar { display: flex; flex-direction: column; gap: 16px; }
+.drop-zone {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center;
+  padding: 22px 16px; background: var(--card); border: 1.5px dashed #B8B2A2; border-radius: 10px; cursor: pointer;
+}
+.drop-zone:hover { border-color: var(--primary); }
+.drop-zone-text { font-size: 13px; font-weight: 600; margin-top: 4px; }
+.drop-zone-hint { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.group-prompt { background: #FBF3E3; border: 1px solid #E0C48A; border-radius: 8px; padding: 10px 12px; display: none; }
+.group-prompt.visible { display: block; }
+.group-prompt-title { font-size: 12px; font-weight: 600; margin-bottom: 6px; color: #5C4A1F; }
+.group-file-item { font-size: 11px; color: #7A6A45; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.group-actions { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.btn-primary, .btn-secondary {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  border-radius: 6px; padding: 7px 10px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; border: none;
+}
+.btn-primary { background: var(--primary); color: var(--paper); }
+.btn-secondary { background: transparent; border: 1px solid #C9B989; color: #5C4A1F; }
+.letter-list { display: flex; flex-direction: column; gap: 6px; }
+.empty-hint { font-size: 12.5px; color: var(--muted); padding: 8px 2px; }
+.letter-row {
+  display: flex; align-items: center; gap: 10px; padding: 9px 10px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 8px; cursor: pointer;
+}
+.letter-row.selected { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+.letter-row-info { flex: 1; min-width: 0; }
+.letter-row-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.status-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; margin-top: 2px; }
+.status-pending { color: var(--muted); }
+.status-parsing { color: var(--aid); }
+.status-done { color: var(--primary); }
+.status-error { color: var(--warn); }
+.page-count { font-size: 9.5px; color: var(--muted); background: var(--paper); border-radius: 8px; padding: 1px 6px; margin-left: 6px; }
+.icon-btn { background: transparent; border: none; color: #A0776A; cursor: pointer; padding: 4px; flex-shrink: 0; font-size: 14px; }
+.detail-panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 22px; min-height: 400px; }
+.detail-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 360px; gap: 10px; color: var(--muted); font-size: 13.5px; }
+.detail-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.school-name-input {
+  font-family: 'Source Serif 4', serif; font-weight: 700; font-size: 19px; border: none; background: transparent;
+  outline: none; color: var(--ink); flex: 1;
+}
+.file-name-note { font-size: 11.5px; color: var(--muted); margin-bottom: 10px; word-break: break-word; }
+.add-page-btn {
+  display: flex; align-items: center; gap: 5px; background: transparent; border: 1px dashed #B8B2A2;
+  border-radius: 6px; padding: 6px 10px; font-size: 11.5px; color: var(--muted2); cursor: pointer; font-family: inherit; margin-bottom: 12px;
+}
+.action-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.reg-review-btn {
+  display: flex; align-items: center; gap: 6px; background: transparent; border: 1px solid var(--reg);
+  color: var(--reg); border-radius: 6px; padding: 6px 11px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit;
+}
+.reg-review-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.error-box { background: rgba(166,61,64,0.08); color: var(--warn); font-size: 12.5px; padding: 10px 12px; border-radius: 7px; margin-bottom: 16px; }
+.quality-box {
+  background: #FBF3E3; border: 1px solid #E0C48A; color: #5C4A1F; font-size: 12.5px;
+  padding: 10px 12px; border-radius: 7px; margin-bottom: 16px; line-height: 1.5;
+}
+.quality-box strong { display: block; margin-bottom: 2px; }
+.quality-badge { color: #B8860B; font-size: 11px; }
+.field-group { margin-bottom: 18px; }
+.field-group-label {
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+  margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 6px;
+}
+.figure-block { padding: 6px 0; border-bottom: 1px solid rgba(218,213,200,0.5); }
+.figure-block:last-child { border-bottom: none; }
+.figure-row { display: flex; justify-content: space-between; align-items: center; }
+.figure-label { font-size: 13px; color: #3E4A41; padding-right: 10px; }
+.figure-input-wrap { display: flex; align-items: center; background: var(--paper); border: 1px solid var(--border); border-radius: 5px; padding: 3px 8px; flex-shrink: 0; }
+.dollar-sign { font-size: 12.5px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+.figure-input {
+  border: none; background: transparent; outline: none; width: 100px; font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; text-align: right; color: var(--ink);
+}
+.source-details { margin-top: 3px; }
+.source-details summary {
+  font-size: 10.5px; color: var(--aid); cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 3px;
+}
+.source-details summary::-webkit-details-marker { display: none; }
+.source-details summary::before { content: '🔎'; font-size: 9px; }
+.source-text {
+  font-size: 11px; color: var(--muted2); background: var(--paper); border-left: 2px solid var(--aid);
+  padding: 5px 8px; margin-top: 4px; border-radius: 0 4px 4px 0; font-style: italic; line-height: 1.4;
+}
+.source-text.none { color: var(--muted); font-style: normal; }
+.scholarship-row {
+  background: var(--paper); border: 1px solid var(--border); border-radius: 7px; padding: 8px 10px; margin-bottom: 6px;
+}
+.scholarship-top { display: flex; align-items: center; gap: 8px; }
+.scholarship-name-input {
+  flex: 1; border: none; background: transparent; outline: none; font-size: 13px; color: var(--ink); font-family: inherit;
+}
+.scholarship-amt-input {
+  border: none; background: var(--card); border: 1px solid var(--border); border-radius: 5px; outline: none;
+  width: 90px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; text-align: right; padding: 3px 6px;
+}
+.add-scholarship-btn {
+  display: flex; align-items: center; gap: 5px; background: transparent; border: 1px dashed #B8B2A2;
+  border-radius: 6px; padding: 6px 10px; font-size: 11.5px; color: var(--muted2); cursor: pointer; font-family: inherit; margin-top: 4px; width: 100%; justify-content: center;
+}
+.compare-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%;
+  background: transparent; border: 1px solid var(--primary); color: var(--primary);
+  border-radius: 7px; padding: 9px 10px; font-size: 12.5px; font-weight: 600; cursor: pointer; font-family: inherit;
+}
+.compare-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.start-over-btn {
+  background: transparent; border: none; color: var(--muted); font-size: 11.5px; cursor: pointer;
+  font-family: inherit; text-decoration: underline; padding: 2px 0; align-self: center;
+}
+.retry-btn {
+  display: inline-flex; align-items: center; gap: 4px; background: transparent; border: 1px solid var(--warn);
+  color: var(--warn); border-radius: 5px; padding: 4px 9px; font-size: 11.5px; font-weight: 600; cursor: pointer;
+  font-family: inherit; margin-top: 6px;
+}
+.download-csv-btn {
+  display: inline-flex; align-items: center; gap: 5px; background: var(--card); border: 1px solid var(--border);
+  color: var(--muted2); border-radius: 6px; padding: 6px 11px; font-size: 12px; font-weight: 600; cursor: pointer;
+  font-family: inherit; margin-bottom: 12px;
+}
+.compare-pick-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; font-size: 13px; margin-bottom: 6px; }
+.back-link { background: transparent; border: none; color: var(--muted2); font-size: 12px; cursor: pointer; font-family: inherit; padding: 0; margin-bottom: 14px; }
+.compare-table-wrap { overflow-x: auto; }
+table.compare-table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+table.compare-table th, table.compare-table td { border: 1px solid var(--border); padding: 8px 12px; text-align: right; white-space: nowrap; }
+table.compare-table th:first-child, table.compare-table td:first-child { text-align: left; white-space: normal; }
+table.compare-table thead th { background: var(--primary); color: var(--paper); font-family: 'Source Serif 4', serif; font-size: 14px; font-weight: 600; }
+table.compare-table .section-row td { background: var(--paper); font-weight: 700; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted2); text-align: left; }
+table.compare-table .net-row td { background: rgba(76,122,131,0.10); font-weight: 700; }
+table.compare-table .balance-row td { background: rgba(166,61,64,0.10); font-weight: 700; font-size: 13.5px; }
+table.compare-table td.figure, table.compare-table th.figure { font-family: 'JetBrains Mono', monospace; }
+table.compare-table .na { color: var(--muted); font-style: italic; }
+footer { text-align: center; font-size: 11.5px; color: var(--muted); padding: 20px 32px 32px; border-top: 1px solid var(--border); margin-top: 20px; }
+footer p { margin: 6px 0; max-width: 560px; margin-left: auto; margin-right: auto; line-height: 1.5; }
+.spin { display: inline-block; animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+input[type="file"] { display: none; }
+
+/* --- Regulatory Review additions --- */
+.reg-intro { font-size: 12.5px; color: var(--muted2); line-height: 1.6; margin-bottom: 18px; padding: 10px 12px; background: rgba(122,92,138,0.07); border-left: 3px solid var(--reg); border-radius: 0 6px 6px 0; }
+.reg-section-title { font-family: 'Source Serif 4', serif; font-weight: 700; font-size: 15px; margin: 20px 0 4px; color: var(--ink); }
+.reg-section-sub { font-size: 11.5px; color: var(--muted); margin-bottom: 10px; line-height: 1.5; }
+.reg-item {
+  display: flex; gap: 10px; padding: 10px 12px; border-radius: 8px; margin-bottom: 6px; border: 1px solid var(--border); background: var(--paper);
+}
+.reg-item-icon { font-size: 15px; flex-shrink: 0; line-height: 1.4; }
+.reg-item-body { flex: 1; min-width: 0; }
+.reg-item-label { font-size: 13px; font-weight: 600; }
+.reg-item-detail { font-size: 12px; color: var(--muted2); margin-top: 2px; line-height: 1.5; }
+.reg-item.pass { border-color: rgba(46,70,54,0.25); }
+.reg-item.pass .reg-item-icon { color: var(--primary); }
+.reg-item.missing { border-color: rgba(166,61,64,0.3); background: rgba(166,61,64,0.05); }
+.reg-item.missing .reg-item-icon { color: var(--warn); }
+.reg-item.review { border-color: rgba(184,134,11,0.35); background: rgba(184,134,11,0.06); }
+.reg-item.review .reg-item-icon { color: #B8860B; }
+.reg-summary-row { display: flex; gap: 14px; margin-bottom: 18px; flex-wrap: wrap; }
+.reg-stat { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; flex: 1; min-width: 110px; }
+.reg-stat-num { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; }
+.reg-stat-label { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+.reg-disclaimer { font-size: 11px; color: var(--muted); background: var(--card); border: 1px solid var(--border); border-radius: 7px; padding: 10px 12px; margin-top: 18px; line-height: 1.55; }
+.mock-badge { display: inline-block; font-size: 9.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #B8860B; background: #FBF3E3; border: 1px solid #E0C48A; border-radius: 4px; padding: 2px 6px; margin-left: 8px; vertical-align: middle; }
 </style>
 </head>
 <body>
-
 <header>
-  <div class="brand-row">
-    <div class="brand-mark">$</div>
-    <div>
-      <div class="brand-name">Financial Aid Offer Analyzer</div>
-      <div class="brand-sub">upload an award letter → pull out the numbers that matter — proof of concept</div>
-    </div>
-  </div>
+<div class="brand-row">
+<div class="brand-mark">$</div>
+<div>
+<div class="brand-name">Financial Aid Offer Analyzer</div>
+<div class="brand-sub">upload an award letter → pull out the numbers that matter — proof of concept</div>
+</div>
+</div>
 </header>
-
 <main>
-  <div class="layout">
-    <div class="sidebar">
-      <div class="drop-zone" id="dropZone">
-        <div style="font-size:20px;">⬆</div>
-        <div class="drop-zone-text">Drop letter file(s) here, or click to choose</div>
-        <div class="drop-zone-hint">PDF, photo, or screenshot — select multiple if one letter spans several photos</div>
-      </div>
-      <input type="file" id="fileInput" accept="application/pdf,image/*" multiple />
-
-      <div class="group-prompt" id="groupPrompt">
-        <div class="group-prompt-title" id="groupPromptTitle"></div>
-        <div id="groupFileList"></div>
-        <div class="group-actions">
-          <button class="btn-primary" id="combineBtn">⧉ One letter, multiple pages</button>
-          <button class="btn-secondary" id="separateBtn">Separate letters</button>
-        </div>
-      </div>
-
-      <div class="letter-list" id="letterList">
-        <div class="empty-hint" id="emptyHint">No letters uploaded yet.</div>
-      </div>
-
-      <button class="compare-btn" id="compareBtn">⚖ Compare offers</button>
-      <button class="start-over-btn" id="startOverBtn">Start over (clear all letters)</button>
-    </div>
-
-    <div class="detail-panel" id="detailPanel">
-      <div class="detail-empty">
-        <div style="font-size:26px;">📄</div>
-        <div>Select a letter to review its extracted data.</div>
-      </div>
-    </div>
-  </div>
+<div class="layout">
+<div class="sidebar">
+<div class="drop-zone" id="dropZone">
+<div style="font-size:20px;">⬆</div>
+<div class="drop-zone-text">Drop letter file(s) here, or click to choose</div>
+<div class="drop-zone-hint">PDF, photo, or screenshot — select multiple if one letter spans several photos</div>
+</div>
+<input type="file" id="fileInput" accept="application/pdf,image/*" multiple />
+<div class="group-prompt" id="groupPrompt">
+<div class="group-prompt-title" id="groupPromptTitle"></div>
+<div id="groupFileList"></div>
+<div class="group-actions">
+<button class="btn-primary" id="combineBtn">⧉ One letter, multiple pages</button>
+<button class="btn-secondary" id="separateBtn">Separate letters</button>
+</div>
+</div>
+<div class="letter-list" id="letterList">
+<div class="empty-hint" id="emptyHint">No letters uploaded yet.</div>
+</div>
+<button class="compare-btn" id="compareBtn">⚖ Compare offers</button>
+<button class="start-over-btn" id="startOverBtn">Start over (clear all letters)</button>
+</div>
+<div class="detail-panel" id="detailPanel">
+<div class="detail-empty">
+<div style="font-size:26px;">📄</div>
+<div>Select a letter to review its extracted data.</div>
+</div>
+</div>
+</div>
 </main>
-
 <input type="file" id="addPageInput" accept="application/pdf,image/*" multiple />
-
 <footer>
-  <p>Internal proof of concept. Always double-check extracted figures against the original letter before relying on them.</p>
-  <p>Want to understand these terms better? <a href="https://studentaid.gov/complete-aid-process/how-calculated" target="_blank" rel="noopener noreferrer" style="color: var(--aid);">Learn more about how financial aid offers are calculated →</a></p>
-  <p>Have questions about your specific offer? Your school's financial aid office is the best resource — they can explain your award, walk through appeal options, and clarify anything on this list that this tool couldn't.</p>
+<p>Internal proof of concept. Always double-check extracted figures against the original letter before relying on them.</p>
+<p>Want to understand these terms better? <a href="https://studentaid.gov/complete-aid-process/how-calculated" target="_blank" rel="noopener noreferrer" style="color: var(--aid);">Learn more about how financial aid offers are calculated →</a></p>
+<p>Have questions about your specific offer? Your school's financial aid office is the best resource — they can explain your award, walk through appeal options, and clarify anything on this list that this tool couldn't.</p>
 </footer>
 
 <script>
 const FIELD_SCHEMA = [
-  { key: "tuition", label: "Tuition", group: "Cost of Attendance" },
-  { key: "housing", label: "Housing", group: "Cost of Attendance" },
-  { key: "otherCosts", label: "Other Costs (books, transportation, personal, etc.)", group: "Cost of Attendance" },
-  { key: "pellGrant", label: "Pell Grant", group: "Gift Aid (doesn't need repayment)" },
-  { key: "stateAid", label: "State Aid", group: "Gift Aid (doesn't need repayment)" },
-  { key: "institutionalGrants", label: "Institutional Grants", group: "Gift Aid (doesn't need repayment)" },
-  { key: "otherGrants", label: "Other Grants (e.g. SEOG, unlisted aid)", group: "Gift Aid (doesn't need repayment)" },
-  { key: "directSubsidizedLoan", label: "Direct Subsidized Loan", group: "Self-Help Aid (must repay)" },
-  { key: "directUnsubsidizedLoan", label: "Direct Unsubsidized Loan", group: "Self-Help Aid (must repay)" },
-  { key: "directPlusLoan", label: "Direct PLUS Loan (Parent/Grad — not guaranteed)", group: "Self-Help Aid (must repay)" },
-  { key: "otherLoans", label: "Other Loans", group: "Self-Help Aid (must repay)" },
-  { key: "federalWorkStudy", label: "Federal Work-Study (earned, not guaranteed)", group: "Work (must be earned)" },
+{ key: "tuition", label: "Tuition", group: "Cost of Attendance" },
+{ key: "housing", label: "Housing", group: "Cost of Attendance" },
+{ key: "otherCosts", label: "Other Costs (books, transportation, personal, etc.)", group: "Cost of Attendance" },
+{ key: "pellGrant", label: "Pell Grant", group: "Gift Aid (doesn't need repayment)" },
+{ key: "stateAid", label: "State Aid", group: "Gift Aid (doesn't need repayment)" },
+{ key: "institutionalGrants", label: "Institutional Grants", group: "Gift Aid (doesn't need repayment)" },
+{ key: "otherGrants", label: "Other Grants (e.g. SEOG, unlisted aid)", group: "Gift Aid (doesn't need repayment)" },
+{ key: "directSubsidizedLoan", label: "Direct Subsidized Loan", group: "Self-Help Aid (must repay)" },
+{ key: "directUnsubsidizedLoan", label: "Direct Unsubsidized Loan", group: "Self-Help Aid (must repay)" },
+{ key: "directPlusLoan", label: "Direct PLUS Loan (Parent/Grad — not guaranteed)", group: "Self-Help Aid (must repay)" },
+{ key: "otherLoans", label: "Other Loans", group: "Self-Help Aid (must repay)" },
+{ key: "federalWorkStudy", label: "Federal Work-Study (earned, not guaranteed)", group: "Work (must be earned)" },
 ];
 const GROUPS = ["Cost of Attendance", "Gift Aid (doesn't need repayment)", "Self-Help Aid (must repay)", "Work (must be earned)"];
 
-let letters = [];       // { id, fileNames, fileTypes, status, error, data }
-let filesById = {};     // id -> File[]
+let letters = []; // { id, fileNames, fileTypes, status, error, data }
+let filesById = {}; // id -> File[]
 let selectedId = null;
 let pendingGroupFiles = null;
-let view = 'detail';    // 'detail' | 'comparePick' | 'compareTable'
+let view = 'detail'; // 'detail' | 'comparePick' | 'compareTable' | 'regReview'
 let compareIds = [];
 
 const dropZone = document.getElementById('dropZone');
@@ -267,7 +290,6 @@ addPageInput.addEventListener('change', (e) => {
   if (e.target.files.length && addPageTargetId) addPagesToLetter(addPageTargetId, e.target.files);
   e.target.value = '';
 });
-
 document.getElementById('combineBtn').addEventListener('click', () => resolvePendingGroup('combine'));
 document.getElementById('separateBtn').addEventListener('click', () => resolvePendingGroup('separate'));
 document.getElementById('compareBtn').addEventListener('click', () => {
@@ -286,9 +308,7 @@ document.getElementById('startOverBtn').addEventListener('click', () => {
 });
 
 function uid() { return 'id-' + Math.random().toString(36).slice(2) + Date.now().toString(36); }
-
 function emptyField() { return { value: null, evidence: null }; }
-
 function emptyLetterData() {
   return {
     schoolName: "",
@@ -297,7 +317,8 @@ function emptyLetterData() {
     pellGrant: emptyField(), stateAid: emptyField(), institutionalGrants: emptyField(), otherGrants: emptyField(),
     directSubsidizedLoan: emptyField(), directUnsubsidizedLoan: emptyField(), directPlusLoan: emptyField(), otherLoans: emptyField(),
     federalWorkStudy: emptyField(),
-    scholarships: [] // [{ id, name, amount, evidence }]
+    scholarships: [], // [{ id, name, amount, evidence }]
+    regReview: null // filled in lazily by runRegReview()
   };
 }
 
@@ -311,7 +332,6 @@ function handleNewFiles(fileList) {
     showGroupPrompt(files);
   }
 }
-
 function showGroupPrompt(files) {
   document.getElementById('groupPromptTitle').textContent =
     `You selected ${files.length} files — are these pages of the same letter?`;
@@ -319,7 +339,6 @@ function showGroupPrompt(files) {
   list.innerHTML = files.map(f => `<div class="group-file-item">${escapeHtml(f.name)}</div>`).join('');
   document.getElementById('groupPrompt').classList.add('visible');
 }
-
 function resolvePendingGroup(mode) {
   if (!pendingGroupFiles) return;
   if (mode === 'combine') {
@@ -330,7 +349,6 @@ function resolvePendingGroup(mode) {
   pendingGroupFiles = null;
   document.getElementById('groupPrompt').classList.remove('visible');
 }
-
 function createLetterFromFiles(files) {
   const id = uid();
   const letter = {
@@ -343,7 +361,6 @@ function createLetterFromFiles(files) {
   render();
   runExtraction(id, files);
 }
-
 function addPagesToLetter(id, fileList) {
   const newFiles = Array.from(fileList);
   if (newFiles.length === 0) return;
@@ -355,7 +372,6 @@ function addPagesToLetter(id, fileList) {
   render();
   runExtraction(id, combined);
 }
-
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -364,10 +380,6 @@ function fileToBase64(file) {
     reader.readAsDataURL(file);
   });
 }
-
-// Resizes/compresses image files in the browser before upload, so large phone-camera
-// photos (often 3-8MB each) don't blow past the server's request size limit. PDFs are
-// left untouched. Caps the longest edge at 1600px and re-encodes as JPEG at 85% quality.
 function resizeImageFile(file, maxDim = 1600, quality = 0.85) {
   return new Promise((resolve, reject) => {
     if (file.type === 'application/pdf') { resolve(file); return; }
@@ -392,7 +404,6 @@ function resizeImageFile(file, maxDim = 1600, quality = 0.85) {
     img.src = url;
   });
 }
-
 function normalizeExtracted(raw) {
   const d = emptyLetterData();
   d.schoolName = raw.schoolName || "";
@@ -410,7 +421,6 @@ function normalizeExtracted(raw) {
   }
   return d;
 }
-
 async function runExtraction(id, files) {
   const letter = letters.find(l => l.id === id);
   letter.status = 'parsing';
@@ -427,7 +437,6 @@ async function runExtraction(id, files) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ files: filesPayload })
     });
-
     const rawText = await res.text();
     let extracted;
     try {
@@ -438,9 +447,7 @@ async function runExtraction(id, files) {
       }
       throw new Error(`Server returned an unexpected response (status ${res.status}). Try again, or use a smaller file.`);
     }
-
     if (!res.ok) throw new Error(extracted.error || 'Extraction failed');
-
     const l = letters.find(x => x.id === id);
     l.status = 'done';
     l.data = normalizeExtracted(extracted);
@@ -452,107 +459,158 @@ async function runExtraction(id, files) {
   render();
 }
 
+/* ---------------- Regulatory Review (34 CFR 668.16(h) and (u)) ---------------- */
+/* MOCK DATA ONLY for this proof-of-concept pass. In the real build this would call a
+   second API endpoint (e.g. /api/regReview) that sends the extracted fields + raw
+   letter text to Gemini for the (u) judgment calls, and runs (h) as deterministic
+   checks against the fields we already extracted. */
+function mockRegReview(letter) {
+  const d = letter.data;
+  const hasCoa = d.tuition.value !== null && d.housing.value !== null && d.otherCosts.value !== null;
+  const hasAidByType = d.pellGrant.value !== null || d.institutionalGrants.value !== null || d.directSubsidizedLoan.value !== null;
+  return {
+    generatedAt: Date.now(),
+    h_items: [
+      {
+        id: 'h1', label: 'Cost of attendance is itemized', status: hasCoa ? 'pass' : 'missing',
+        detail: hasCoa
+          ? 'Tuition, housing, and other costs are each broken out separately, plus a total.'
+          : 'One or more cost components (tuition, housing, other costs) was not found on the letter. §668.16(h)(1) requires the individual components, not just a lump sum.'
+      },
+      {
+        id: 'h2', label: 'Aid is separated by type and repayment status', status: hasAidByType ? 'pass' : 'missing',
+        detail: hasAidByType
+          ? 'Grants, loans, and work-study appear as distinct line items.'
+          : 'Could not confirm aid is clearly separated into grant/scholarship vs. loan vs. work-study. §668.16(h)(2) requires this distinction to be clear to the student.'
+      },
+      {
+        id: 'h3', label: 'Net price is shown or derivable', status: 'pass',
+        detail: 'Net price can be calculated from the extracted cost and gift aid figures. §668.16(h)(3).'
+      },
+      {
+        id: 'h4', label: 'Disbursement method and accept/decline deadlines stated', status: 'review',
+        detail: 'Letter mentions an award notification date but no explicit deadline for accepting or declining aid was located. Worth a manual check against §668.16(h)(4).'
+      },
+      {
+        id: 'h5', label: 'Withdrawal / refund policy referenced', status: 'missing',
+        detail: 'No reference to the institution\'s refund policy or Return to Title IV treatment found in this letter. §668.16(h)(5) expects this to be disclosed (can be via a linked policy).'
+      }
+    ],
+    u_items: [
+      {
+        id: 'u1', label: 'Loan amounts are not framed as "free money" or grants', status: 'pass',
+        detail: 'Loan line items are labeled "Loan" and appear in a separate section from grants.'
+      },
+      {
+        id: 'u2', label: 'No urgency/pressure language detected', status: 'review',
+        detail: 'Phrase flagged: "act now to secure your funding" — could read as routine deadline language or as pressure tactics under §668.16(u) / Subpart R. Recommend human review of the exact wording in context.'
+      },
+      {
+        id: 'u3', label: 'Net price is not obscured by only showing gross aid', status: 'pass',
+        detail: 'Letter separates cost of attendance from aid rather than only showing a large aid total.'
+      }
+    ]
+  };
+}
+function regReviewCounts(rr) {
+  const all = [...rr.h_items, ...rr.u_items];
+  return {
+    pass: all.filter(i => i.status === 'pass').length,
+    review: all.filter(i => i.status === 'review').length,
+    missing: all.filter(i => i.status === 'missing').length
+  };
+}
+function runRegReview(id) {
+  const letter = letters.find(l => l.id === id);
+  if (!letter) return;
+  view = 'regReview';
+  if (!letter.data.regReview) {
+    letter.data.regReview = mockRegReview(letter);
+  }
+  render();
+}
+
 function removeLetter(id) {
   letters = letters.filter(l => l.id !== id);
   delete filesById[id];
   if (selectedId === id) selectedId = null;
   render();
 }
-
 function selectLetter(id) { selectedId = id; view = 'detail'; render(); }
-
 function scholarshipTotal(letter) {
   return letter.data.scholarships.reduce((sum, s) => sum + (typeof s.amount === 'number' ? s.amount : 0), 0);
 }
-
 function computeDerived(letter) {
   const d = letter.data;
   const coaFields = [d.tuition.value, d.housing.value, d.otherCosts.value];
   const coaParts = coaFields.filter(v => typeof v === 'number');
   const coa = coaParts.length ? coaParts.reduce((a, b) => a + b, 0) : null;
   const coaComplete = coaFields.every(v => typeof v === 'number');
-
   const scholTotal = scholarshipTotal(letter);
   const giftFields = [d.pellGrant.value, d.stateAid.value, d.institutionalGrants.value, d.otherGrants.value];
   const giftParts = giftFields.filter(v => typeof v === 'number');
   const giftAidTotal = giftParts.reduce((a, b) => a + b, 0) + scholTotal;
-
   const netPrice = coa !== null ? coa - giftAidTotal : null;
-
   const loanFields = [d.directSubsidizedLoan.value, d.directUnsubsidizedLoan.value, d.directPlusLoan.value, d.otherLoans.value];
   const loanParts = loanFields.filter(v => typeof v === 'number');
   const loans = loanParts.length ? loanParts.reduce((a, b) => a + b, 0) : 0;
-
   const workStudy = typeof d.federalWorkStudy.value === 'number' ? d.federalWorkStudy.value : 0;
-
   const balance = netPrice !== null ? netPrice - loans - workStudy : null;
-
   return { coa, coaComplete, giftAid: giftAidTotal, netPrice, loans, workStudy, balance };
 }
-
 function fmtMoney(v) {
   if (v === null || v === undefined) return '<span class="na">—</span>';
   return '$' + Math.round(v).toLocaleString('en-US');
 }
-
 function toggleCompareId(id) {
   const idx = compareIds.indexOf(id);
   if (idx >= 0) compareIds.splice(idx, 1);
   else if (compareIds.length < 4) compareIds.push(id);
   render();
 }
-
 function updateFieldValue(id, key, value) {
   const l = letters.find(x => x.id === id);
   l.data[key].value = value;
   render();
 }
-
 function updateSchoolName(id, value) {
   const l = letters.find(x => x.id === id);
   l.data.schoolName = value;
   renderLetterList();
 }
-
 function addScholarship(id) {
   const l = letters.find(x => x.id === id);
   l.data.scholarships.push({ id: uid(), name: '', amount: null, evidence: null });
   render();
 }
-
 function updateScholarship(id, schId, patch) {
   const l = letters.find(x => x.id === id);
   const s = l.data.scholarships.find(x => x.id === schId);
   Object.assign(s, patch);
   render();
 }
-
 function removeScholarship(id, schId) {
   const l = letters.find(x => x.id === id);
   l.data.scholarships = l.data.scholarships.filter(x => x.id !== schId);
   render();
 }
-
 function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str == null ? '' : str;
   return div.innerHTML;
 }
-
 function sourceDetailsHtml(evidence) {
   if (!evidence) {
     return `<details class="source-details"><summary>Source</summary><div class="source-text none">No source line found — this may be manually entered or the model didn't cite a specific spot.</div></details>`;
   }
   return `<details class="source-details"><summary>Source</summary><div class="source-text">"${escapeHtml(evidence)}"</div></details>`;
 }
-
 function statusTagHtml(status) {
   if (status === 'parsing') return `<span class="status-tag status-parsing"><span class="spin">⟳</span> Parsing…</span>`;
   if (status === 'done') return `<span class="status-tag status-done">✓ Extracted</span>`;
   if (status === 'error') return `<span class="status-tag status-error">⚠ Failed</span>`;
   return `<span class="status-tag status-pending">Pending</span>`;
 }
-
 function renderLetterList() {
   const container = document.getElementById('letterList');
   if (letters.length === 0) {
@@ -572,7 +630,6 @@ function renderLetterList() {
         <button class="icon-btn" data-remove="${l.id}">🗑</button>
       </div>`;
   }).join('');
-
   container.querySelectorAll('.letter-row').forEach(row => {
     row.addEventListener('click', (e) => {
       if (e.target.closest('[data-remove]')) return;
@@ -583,13 +640,11 @@ function renderLetterList() {
     btn.addEventListener('click', (e) => { e.stopPropagation(); removeLetter(btn.dataset.remove); });
   });
 }
-
 function renderDetailPanel() {
   const panel = document.getElementById('detailPanel');
-
   if (view === 'comparePick') { renderComparePick(panel); return; }
   if (view === 'compareTable') { renderCompareTable(panel); return; }
-
+  if (view === 'regReview') { renderRegReview(panel); return; }
   const letter = letters.find(l => l.id === selectedId);
   if (!letter) {
     panel.innerHTML = `<div class="detail-empty"><div style="font-size:26px;">📄</div><div>Select a letter to review its extracted data.</div></div>`;
@@ -602,7 +657,10 @@ function renderDetailPanel() {
       ${statusTagHtml(letter.status)}
     </div>
     <div class="file-name-note">${isMulti ? `from ${letter.fileNames.length} files: ${escapeHtml(letter.fileNames.join(', '))}` : `from ${escapeHtml(letter.fileNames[0])}`}</div>
-    <button class="add-page-btn" id="addPageBtn">+ Add another page/photo to this letter</button>
+    <div class="action-row">
+      <button class="add-page-btn" id="addPageBtn" style="margin-bottom:0;">+ Add another page/photo to this letter</button>
+      <button class="reg-review-btn" id="regReviewBtn" ${letter.status !== 'done' ? 'disabled' : ''}>⚖ Regulatory review (internal)</button>
+    </div>
   `;
   if (letter.status === 'error') {
     html += `<div class="error-box">Extraction failed: ${escapeHtml(letter.error || '')}. You can enter the figures manually below, or try again.<br/><button class="retry-btn" id="retryBtn">↻ Retry extraction</button></div>`;
@@ -610,10 +668,8 @@ function renderDetailPanel() {
   if (letter.data.documentIssues) {
     html += `<div class="quality-box"><strong>⚠ This file may be hard to read</strong>${escapeHtml(letter.data.documentIssues)} Consider retaking the photo (good lighting, no glare, whole page in frame) or uploading a PDF if you have one — then re-check the figures below.</div>`;
   }
-
   GROUPS.forEach(group => {
     html += `<div class="field-group"><div class="field-group-label">${group}</div>`;
-
     FIELD_SCHEMA.filter(f => f.group === group).forEach(f => {
       const field = letter.data[f.key];
       html += `
@@ -628,7 +684,6 @@ function renderDetailPanel() {
           ${field.value !== null ? sourceDetailsHtml(field.evidence) : ''}
         </div>`;
     });
-
     if (group === "Gift Aid (doesn't need repayment)") {
       html += `<div class="figure-block"><div class="field-group-label" style="border:none; margin-bottom:6px; margin-top:6px;">Scholarships</div>`;
       letter.data.scholarships.forEach(s => {
@@ -647,17 +702,16 @@ function renderDetailPanel() {
       });
       html += `<button class="add-scholarship-btn" id="addScholarshipBtn">+ Add scholarship</button></div>`;
     }
-
     html += `</div>`;
   });
-
   panel.innerHTML = html;
-
   document.getElementById('schoolNameInput').addEventListener('input', (e) => updateSchoolName(letter.id, e.target.value));
   document.getElementById('addPageBtn').addEventListener('click', () => {
     addPageTargetId = letter.id;
     addPageInput.click();
   });
+  const regBtn = document.getElementById('regReviewBtn');
+  if (regBtn) regBtn.addEventListener('click', () => runRegReview(letter.id));
   const retryBtn = document.getElementById('retryBtn');
   if (retryBtn) retryBtn.addEventListener('click', () => runExtraction(letter.id, filesById[letter.id] || []));
   panel.querySelectorAll('[data-field]').forEach(input => {
@@ -682,6 +736,61 @@ function renderDetailPanel() {
   });
 }
 
+function regItemHtml(item) {
+  const icon = item.status === 'pass' ? '✓' : (item.status === 'missing' ? '✕' : '?');
+  return `
+    <div class="reg-item ${item.status}">
+      <div class="reg-item-icon">${icon}</div>
+      <div class="reg-item-body">
+        <div class="reg-item-label">${escapeHtml(item.label)}</div>
+        <div class="reg-item-detail">${escapeHtml(item.detail)}</div>
+      </div>
+    </div>`;
+}
+function renderRegReview(panel) {
+  const letter = letters.find(l => l.id === selectedId);
+  if (!letter || !letter.data.regReview) {
+    panel.innerHTML = `<div class="detail-empty"><div style="font-size:26px;">⚖</div><div>No letter selected.</div></div>`;
+    return;
+  }
+  const rr = letter.data.regReview;
+  const counts = regReviewCounts(rr);
+  let html = `
+    <button class="back-link" id="backFromReg">← Back to letter</button>
+    <div class="detail-header" style="margin-bottom:10px;">
+      <div style="font-family:'Source Serif 4',serif; font-weight:700; font-size:19px;">
+        Regulatory Review — ${escapeHtml(letter.data.schoolName || letter.fileNames[0])}
+        <span class="mock-badge">Mock data</span>
+      </div>
+    </div>
+    <div class="reg-intro">
+      Checks this letter against 34 CFR §668.16(h) (financial aid counseling and disclosure requirements) and §668.16(u)
+      (no substantial misrepresentation or aggressive/deceptive recruitment tactics). This is an internal compliance
+      review tool — not something students see. Findings are a starting point for staff review, not a legal determination.
+    </div>
+    <div class="reg-summary-row">
+      <div class="reg-stat"><div class="reg-stat-num" style="color:var(--primary);">${counts.pass}</div><div class="reg-stat-label">Pass</div></div>
+      <div class="reg-stat"><div class="reg-stat-num" style="color:#B8860B;">${counts.review}</div><div class="reg-stat-label">Needs review</div></div>
+      <div class="reg-stat"><div class="reg-stat-num" style="color:var(--warn);">${counts.missing}</div><div class="reg-stat-label">Missing</div></div>
+    </div>
+
+    <div class="reg-section-title">§668.16(h) — Financial aid counseling &amp; disclosure</div>
+    <div class="reg-section-sub">Deterministic checks against the fields already extracted from this letter.</div>
+    ${rr.h_items.map(regItemHtml).join('')}
+
+    <div class="reg-section-title">§668.16(u) — Misrepresentation &amp; deceptive recruitment</div>
+    <div class="reg-section-sub">Judgment-based checks on the letter's language. These need a human to confirm — flagged items are not automatically violations.</div>
+    ${rr.u_items.map(regItemHtml).join('')}
+
+    <div class="reg-disclaimer">
+      This tool flags items for staff review; it does not determine regulatory compliance. Language flagged under (u) in
+      particular is a starting point — read the flagged phrase in its full context before drawing any conclusion.
+    </div>
+  `;
+  panel.innerHTML = html;
+  document.getElementById('backFromReg').addEventListener('click', () => { view = 'detail'; render(); });
+}
+
 function renderComparePick(panel) {
   if (letters.length < 2) {
     panel.innerHTML = `<div class="detail-empty"><div style="font-size:26px;">⚖</div><div>Add at least two letters before comparing.</div></div>`;
@@ -698,7 +807,6 @@ function renderComparePick(panel) {
   });
   html += `<button class="btn-primary" id="viewCompareBtn" style="margin-top:10px;" ${compareIds.length < 2 ? 'disabled' : ''}>View comparison →</button>`;
   panel.innerHTML = html;
-
   document.getElementById('backFromPick').addEventListener('click', () => { view = 'detail'; render(); });
   panel.querySelectorAll('[data-pick]').forEach(cb => {
     cb.addEventListener('change', () => toggleCompareId(cb.dataset.pick));
@@ -706,7 +814,6 @@ function renderComparePick(panel) {
   const goBtn = document.getElementById('viewCompareBtn');
   if (goBtn) goBtn.addEventListener('click', () => { view = 'compareTable'; render(); });
 }
-
 function letterToCsvRows(letter) {
   const d = letter.data;
   const rows = [];
@@ -726,12 +833,10 @@ function letterToCsvRows(letter) {
   rows.push(['Federal Work-Study', name(d.federalWorkStudy)]);
   return rows;
 }
-
 function csvEscape(v) {
   const s = String(v);
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
-
 function downloadComparisonCsv(compared, derivedByLetterId) {
   const labelRows = letterToCsvRows(compared[0]).map(r => r[0]);
   const header = ['Line item', ...compared.map(l => l.data.schoolName || l.fileNames[0])];
@@ -744,7 +849,6 @@ function downloadComparisonCsv(compared, derivedByLetterId) {
   lines.push(['Total Cost of Attendance (COA)', ...compared.map(l => derivedByLetterId[l.id].coa ?? '')]);
   lines.push(['Net Price', ...compared.map(l => derivedByLetterId[l.id].netPrice ?? '')]);
   lines.push(['Balance Remaining', ...compared.map(l => derivedByLetterId[l.id].balance ?? '')]);
-
   const csv = lines.map(row => row.map(csvEscape).join(',')).join('\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
@@ -756,61 +860,69 @@ function downloadComparisonCsv(compared, derivedByLetterId) {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
-
 function renderCompareTable(panel) {
   const compared = letters.filter(l => compareIds.includes(l.id));
   if (compared.length < 2) { view = 'comparePick'; renderComparePick(panel); return; }
-
   const derived = compared.map(l => ({ letter: l, d: computeDerived(l) }));
   const derivedByLetterId = {};
   derived.forEach(x => { derivedByLetterId[x.letter.id] = x.d; });
-
   let html = `
     <button class="back-link" id="backFromTable">← Choose different offers</button>
     <button class="download-csv-btn" id="downloadCsvBtn">⬇ Download comparison as CSV</button>
     <div class="compare-table-wrap"><table class="compare-table">
     <thead><tr><th></th>${derived.map(x => `<th>${escapeHtml(x.letter.data.schoolName || x.letter.fileNames[0])}</th>`).join('')}</tr></thead>
     <tbody>
-      <tr><td>Total Cost of Attendance (COA)</td>${derived.map(x => `<td class="figure">${x.d.coa === null ? '<span class="na">—</span>' : fmtMoney(x.d.coa) + (x.d.coaComplete ? '' : '<span class="na">*</span>')}</td>`).join('')}</tr>
-
-      <tr class="section-row"><td colspan="${derived.length + 1}">Gift Aid (money you don't have to pay back)</td></tr>
-      <tr><td>Pell Grant</td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.pellGrant.value)}</td>`).join('')}</tr>
-      <tr><td>State Aid</td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.stateAid.value)}</td>`).join('')}</tr>
-      <tr><td>Institutional Grants</td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.institutionalGrants.value)}</td>`).join('')}</tr>
-      <tr><td>Scholarships (${derived.map(x => x.letter.data.scholarships.length).join('/')} listed)</td>${derived.map(x => `<td class="figure">${fmtMoney(scholarshipTotal(x.letter))}</td>`).join('')}</tr>
-      <tr><td>Other Grants</td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.otherGrants.value)}</td>`).join('')}</tr>
-
-      <tr class="net-row"><td>Net Price (COA − Gift Aid)</td>${derived.map(x => `<td class="figure">${fmtMoney(x.d.netPrice)}</td>`).join('')}</tr>
-
-      <tr class="section-row"><td colspan="${derived.length + 1}">Self-Help Aid (money you do have to pay back — loans)</td></tr>
-      <tr><td>Direct Subsidized Loan</td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.directSubsidizedLoan.value)}</td>`).join('')}</tr>
-      <tr><td>Direct Unsubsidized Loan</td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.directUnsubsidizedLoan.value)}</td>`).join('')}</tr>
-      <tr><td>Direct PLUS Loan <span style="font-weight:400; color:var(--muted); font-size:10.5px;">(not guaranteed)</span></td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.directPlusLoan.value)}</td>`).join('')}</tr>
-      <tr><td>Other Loans</td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.otherLoans.value)}</td>`).join('')}</tr>
-
-      <tr class="section-row"><td colspan="${derived.length + 1}">Work (money you can earn)</td></tr>
-      <tr><td>Federal Work-Study <span style="font-weight:400; color:var(--muted); font-size:10.5px;">(earned, not guaranteed)</span></td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.federalWorkStudy.value)}</td>`).join('')}</tr>
-
-      <tr class="balance-row"><td>Balance Remaining (Net Price − Loans − Work-Study)</td>${derived.map(x => `<td class="figure">${fmtMoney(x.d.balance)}</td>`).join('')}</tr>
+    <tr><td>Total Cost of Attendance (COA)</td>${derived.map(x => `<td class="figure">${x.d.coa === null ? '<span class="na">—</span>' : fmtMoney(x.d.coa) + (x.d.coaComplete ? '' : '<span class="na">*</span>')}</td>`).join('')}</tr>
+    <tr class="section-row"><td colspan="${derived.length + 1}">Gift Aid (money you don't have to pay back)</td></tr>
+    <tr><td>Pell Grant</td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.pellGrant.value)}</td>`).join('')}</tr>
+    <tr><td>State Aid</td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.stateAid.value)}</td>`).join('')}</tr>
+    <tr><td>Institutional Grants</td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.institutionalGrants.value)}</td>`).join('')}</tr>
+    <tr><td>Scholarships (${derived.map(x => x.letter.data.scholarships.length).join('/')} listed)</td>${derived.map(x => `<td class="figure">${fmtMoney(scholarshipTotal(x.letter))}</td>`).join('')}</tr>
+    <tr><td>Other Grants</td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.otherGrants.value)}</td>`).join('')}</tr>
+    <tr class="net-row"><td>Net Price (COA − Gift Aid)</td>${derived.map(x => `<td class="figure">${fmtMoney(x.d.netPrice)}</td>`).join('')}</tr>
+    <tr class="section-row"><td colspan="${derived.length + 1}">Self-Help Aid (money you do have to pay back — loans)</td></tr>
+    <tr><td>Direct Subsidized Loan</td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.directSubsidizedLoan.value)}</td>`).join('')}</tr>
+    <tr><td>Direct Unsubsidized Loan</td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.directUnsubsidizedLoan.value)}</td>`).join('')}</tr>
+    <tr><td>Direct PLUS Loan <span style="font-weight:400; color:var(--muted); font-size:10.5px;">(not guaranteed)</span></td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.directPlusLoan.value)}</td>`).join('')}</tr>
+    <tr><td>Other Loans</td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.otherLoans.value)}</td>`).join('')}</tr>
+    <tr class="section-row"><td colspan="${derived.length + 1}">Work (money you can earn)</td></tr>
+    <tr><td>Federal Work-Study <span style="font-weight:400; color:var(--muted); font-size:10.5px;">(earned, not guaranteed)</span></td>${derived.map(x => `<td class="figure">${fmtMoney(x.letter.data.federalWorkStudy.value)}</td>`).join('')}</tr>
+    <tr class="balance-row"><td>Balance Remaining (Net Price − Loans − Work-Study)</td>${derived.map(x => `<td class="figure">${fmtMoney(x.d.balance)}</td>`).join('')}</tr>
     </tbody>
     </table></div>
     <p style="font-size:11px; color:var(--muted); margin-top:12px; line-height:1.5;">
-      * COA shown is only a partial total — one or more of Tuition/Housing/Other Costs wasn't found on that letter, so this figure may understate the real cost. Work-study and PLUS loans are not guaranteed — work-study must be earned through employment, and PLUS loans require a separate credit-based application. Open a letter's detail view to see the source line behind any figure.
+    * COA shown is only a partial total — one or more of Tuition/Housing/Other Costs wasn't found on that letter, so this figure may understate the real cost. Work-study and PLUS loans are not guaranteed — work-study must be earned through employment, and PLUS loans require a separate credit-based application. Open a letter's detail view to see the source line behind any figure.
     </p>
   `;
   panel.innerHTML = html;
   document.getElementById('backFromTable').addEventListener('click', () => { view = 'comparePick'; render(); });
   document.getElementById('downloadCsvBtn').addEventListener('click', () => downloadComparisonCsv(compared, derivedByLetterId));
 }
-
 function render() {
   renderLetterList();
   renderDetailPanel();
   document.getElementById('compareBtn').disabled = letters.length < 2;
 }
 
+/* -------- Demo seed so this preview shows something without needing the real API -------- */
+function seedDemoLetter() {
+  const id = uid();
+  const data = emptyLetterData();
+  data.schoolName = "Example State University";
+  data.tuition = { value: 28400, evidence: "Tuition & Fees: $28,400" };
+  data.housing = { value: 12100, evidence: "Housing & Meals: $12,100" };
+  data.otherCosts = { value: 3200, evidence: "Books, Supplies, Personal: $3,200" };
+  data.pellGrant = { value: 4500, evidence: "Federal Pell Grant: $4,500" };
+  data.institutionalGrants = { value: 6000, evidence: "University Grant: $6,000" };
+  data.directSubsidizedLoan = { value: 3500, evidence: "Direct Subsidized Loan: $3,500" };
+  data.directUnsubsidizedLoan = { value: 2000, evidence: "Direct Unsubsidized Loan: $2,000" };
+  data.federalWorkStudy = { value: 2500, evidence: "Federal Work-Study: $2,500" };
+  const letter = { id, fileNames: ["example_offer_letter.pdf"], fileTypes: ["application/pdf"], status: 'done', error: null, data };
+  letters.push(letter);
+  selectedId = id;
+}
+seedDemoLetter();
 render();
 </script>
 </body>
 </html>
-
